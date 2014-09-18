@@ -2,6 +2,7 @@
   "deps": [
   { "name": "fauxton" },
   { "name": "databases" },
+  { "name": "debugger" },
   { "name": "documents" },
   { "name": "pouchdb" },
   { "name": "activetasks" },

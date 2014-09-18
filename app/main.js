@@ -21,6 +21,7 @@ function(app, FauxtonAPI, LoadAddons) {
 
   app.addons = LoadAddons.addons;
   FauxtonAPI.router = app.router = new FauxtonAPI.Router(app.addons);
+
   // Trigger the initial route and enable HTML5 History API support, set the
   // root folder to '/' by default.  Change in app.js.
   Backbone.history.start({ pushState: false, root: app.root });
