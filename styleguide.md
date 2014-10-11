@@ -1,6 +1,6 @@
 # Javascript Style Guide
 
-This document attempts to codify the javascript code style rules for Fauxton. This has been patched together from
+This document attempts to codify the JavaScipt code style rules for Fauxton. This has been patched together from
 a few sources, including [Pootle's style guide](http://pootle.readthedocs.org/en/latest/developers/styleguide.html#javascript),
 [Google JS style guide](https://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml), and from
 reverse-engineering our own codebase.
@@ -8,8 +8,8 @@ reverse-engineering our own codebase.
 This is intended to be a living document: any disagreements about style should be brought to the community via IRC,
 discussed, agreed upon and documented here.
 
-Note: We have jshint running as a grunt task which will catch the more egregious errors (missing `vars`, missing
-semicolons etc). See the `gruntfile.js` for the settings being used.
+Note: We have JSHint running as a grunt task which will catch the more egregious errors (missing `vars`, missing
+semicolons etc). See the `Gruntfile.js` for the settings being used.
 
 
 ## Programming Style
@@ -66,7 +66,7 @@ has performance benefits as well as making it easier for someone to understand y
 Bad:
 ```javascript
 var greeting = 'Hello World!';
-greeting = function() {
+greeting = function () {
   return 'Goodbye World';
 };
 ```
@@ -75,7 +75,7 @@ Special cases for `null` and `undefined` since they're their own type. It's fine
 or null var.
 
 #### Indentation
-- 2-space indentation. Don't use tabs. Jshint will whine if you have mixed tabs and spaces.
+- 2-space indentation. Don't use tabs. JSHint will whine if you have mixed tabs and spaces.
 - Avoid lines longer than 120 characters.
 
 #### Whitespace
