@@ -21,7 +21,7 @@ the License.
 <div class="doc-item">
   <header>
     <span class="header-keylabel"><%- doc.isFromView() ? 'key' : 'id' %></span> <span class="header-doc-id">"<%- docIdentifier %>"</span>
-    <% if (!doc.isReducedShown()) { %>
+    <% if (!isReducedView) { %>
     <div class="doc-edit-symbol pull-right">
     <% if (doc.isFromView()) { %>
       <a href="#<%- doc.url('app') %>">

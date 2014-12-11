@@ -192,7 +192,12 @@ function(app, FauxtonAPI, Components, Documents, Databases, Views, QueryOptions)
     },
 
     initialize: function (options) {
+      var opts = _.extend({
+        isReducedView: false
+      }, options);
+
       this.checked = options.checked;
+      this.isReducedView = opts.isReducedView;
     },
 
     events: {
@@ -209,7 +214,8 @@ function(app, FauxtonAPI, Components, Documents, Databases, Views, QueryOptions)
       return {
         docIdentifier: this.model.isEditable() ? this.model.get('_id') : this.model.get('key'),
         doc: this.model,
-        checked: this.checked
+        checked: this.checked,
+        isReducedView: this.isReducedView
       };
     },
 
@@ -532,7 +538,8 @@ function(app, FauxtonAPI, Components, Documents, Databases, Views, QueryOptions)
 
         this.rows[id] = this.insertView('#doc-list', new Views.Document({
           model: doc,
-          checked: isChecked
+          checked: isChecked,
+          isReducedView: docs.params.reduce === "true"
         }));
       }, this);
     },
