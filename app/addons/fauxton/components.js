@@ -24,6 +24,7 @@ define([
   "app",
   // Libs
   "api",
+  'addons/fauxton/components.react',
   "ace_configuration",
   "spin",
 
@@ -33,7 +34,7 @@ define([
   "velocity.ui"
 ],
 
-function(app, FauxtonAPI, ace, spin, ZeroClipboard) {
+function(app, FauxtonAPI, ReactComponents, ace, spin, ZeroClipboard) {
   var Components = FauxtonAPI.addon();
 
   // setting up the left header with the backbutton used in Views and All docs
@@ -111,7 +112,7 @@ function(app, FauxtonAPI, ace, spin, ZeroClipboard) {
       // remove the current database name from the list
       dbNames = _.without(dbNames, currentDBName);
 
-      this.lookaheadTray = this.insertView("#header-lookahead", new Components.LookaheadTray({
+      this.lookaheadTray = this.insertView("#header-lookahead", new ReactComponents.LookaheadTray({
         data: dbNames,
         toggleEventName: options.toggleEventName,
         onUpdateEventName: options.onUpdateEventName,
@@ -1014,92 +1015,6 @@ function(app, FauxtonAPI, ace, spin, ZeroClipboard) {
       return this.client.on.apply(this.client, arguments);
     }
   });
-
-
-  Components.LookaheadTray = FauxtonAPI.View.extend({
-    className: "lookahead-tray tray",
-    template: "addons/fauxton/templates/lookahead_tray",
-    placeholder: "Enter to search",
-
-    events: {
-      'click #js-close-tray': 'closeTray',
-      'keyup': 'onKeyup'
-    },
-
-    serialize: function () {
-      return {
-        placeholder: this.placeholder
-      };
-    },
-
-    initialize: function (opts) {
-      this.data = opts.data;
-      this.toggleEventName = opts.toggleEventName;
-      this.onUpdateEventName = opts.onUpdateEventName;
-
-      var trayIsVisible = _.bind(this.trayIsVisible, this);
-      var closeTray = _.bind(this.closeTray, this);
-      $("body").on("click.lookaheadTray", function (e) {
-        if (!trayIsVisible()) { return; }
-        if ($(e.target).closest(".lookahead-tray").length === 0 &&
-            $(e.target).closest('.lookahead-tray-link').length === 0) {
-          closeTray();
-        }
-      });
-    },
-
-    afterRender: function () {
-      var that = this;
-      this.dbSearchTypeahead = new Components.Typeahead({
-        el: 'input.search-autocomplete',
-        source: that.data,
-        onUpdateEventName: that.onUpdateEventName
-      });
-      this.dbSearchTypeahead.render();
-    },
-
-    clearValue: function () {
-      this.$('.search-autocomplete').val('');
-    },
-
-    cleanup: function () {
-      $("body").off("click.lookaheadTray");
-    },
-
-    trayIsVisible: function () {
-      return this.$el.is(":visible");
-    },
-
-    toggleTray: function () {
-      if (this.trayIsVisible()) {
-        this.closeTray();
-      } else {
-        this.openTray();
-      }
-    },
-
-    openTray: function () {
-      var speed = FauxtonAPI.constants.MISC.TRAY_TOGGLE_SPEED;
-      this.$el.velocity('transition.slideDownIn', speed, function () {
-        this.$el.find('input').focus();
-      }.bind(this));
-    },
-
-    closeTray: function () {
-      var $tray = this.$el;
-      $tray.velocity("reverse", FauxtonAPI.constants.MISC.TRAY_TOGGLE_SPEED, function () {
-        $tray.hide();
-      });
-      FauxtonAPI.Events.trigger('lookaheadTray:close');
-    },
-
-    onKeyup: function (e) {
-      if (e.which === 27) {
-        this.closeTray();
-      }
-    }
-  });
-
 
   //need to make this into a backbone view...
   var routeObjectSpinner;

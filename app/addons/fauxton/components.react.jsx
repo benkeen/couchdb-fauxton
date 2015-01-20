@@ -149,6 +149,98 @@ function(FauxtonAPI, React, Stores, Actions) {
   });
 
 
+  var LookaheadTray = React.createClass({
+
+    componentWillMount: function (opts) {
+      /*
+      this.data = opts.data;
+      this.toggleEventName = opts.toggleEventName;
+      this.onUpdateEventName = opts.onUpdateEventName;
+
+      var trayIsVisible = _.bind(this.trayIsVisible, this);
+      var closeTray = _.bind(this.closeTray, this);
+      $("body").on("click.lookaheadTray", function (e) {
+        if (!trayIsVisible()) { return; }
+        if ($(e.target).closest(".lookahead-tray").length === 0 &&
+            $(e.target).closest('.lookahead-tray-link').length === 0) {
+          closeTray();
+        }
+      });
+      */
+    },
+
+    componentDidMount: function () {
+      /*
+      var that = this;
+      this.dbSearchTypeahead = new Components.Typeahead({
+        el: 'input.search-autocomplete',
+        source: that.data,
+        onUpdateEventName: that.onUpdateEventName
+      });
+      this.dbSearchTypeahead.render();
+      */
+    },
+
+    componentWillUnmount: function () {
+      $('body').off('click.lookaheadTray');
+    },
+
+    getDefaultProps: function () {
+      return {
+        placeholder: 'Enter to search'
+      };
+    },
+
+    onKeyUp: function (e) {
+      if (e.which === 27) {
+        this.closeTray();
+      }
+    },
+
+    closeTray: function () {
+      var tray = this.getDOMNode();
+      $(tray).velocity('reverse', FauxtonAPI.constants.MISC.TRAY_TOGGLE_SPEED, function () {
+        $(tray).hide();
+      });
+      FauxtonAPI.Events.trigger('lookaheadTray:close'); // TODO?
+    },
+
+    trayIsVisible: function () {
+      return $(this.getDOMNode()).is(":visible");
+    },
+
+    toggleTray: function () {
+      if (this.trayIsVisible()) {
+        this.closeTray();
+      } else {
+        this.openTray();
+      }
+    },
+
+    openTray: function () {
+      var tray = this.getDOMNode();
+      $(tray).velocity('transition.slideDownIn', FauxtonAPI.constants.MISC.TRAY_TOGGLE_SPEED, function () {
+        $(tray).find('input').focus();
+      }.bind(this));
+    },
+
+    clearValue: function () {
+      this.refs.searchField.value = '';
+    },
+
+    render: function () {
+      return (
+        <div className="lookahead-tray tray">
+          <input type="text" className="search-autocomplete" ref="searchField" placeholder={this.props.placeholder} 
+            keyup={this.onKeyup} />
+          <button type="submit" className="btn btn-primary search-btn"><i className="icon icon-search"></i></button>
+          <div id="js-close-tray" className="fonticon-cancel" onClick={this.closeTray}></div>
+        </div>
+      );
+    }
+  });
+
+
   return {
     renderNavBar: function (el) {
       React.render(<NavBar/>, el);
