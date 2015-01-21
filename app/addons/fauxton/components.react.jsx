@@ -246,7 +246,8 @@ function(FauxtonAPI, React, Stores, Actions) {
       React.render(<NavBar/>, el);
     },
 
-    Burger: Burger
+    Burger: Burger,
+    LookaheadTray: LookaheadTray
   };
 
 });

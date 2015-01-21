@@ -112,12 +112,14 @@ function(app, FauxtonAPI, ReactComponents, ace, spin, ZeroClipboard) {
       // remove the current database name from the list
       dbNames = _.without(dbNames, currentDBName);
 
+      /*
       this.lookaheadTray = this.insertView("#header-lookahead", new ReactComponents.LookaheadTray({
         data: dbNames,
         toggleEventName: options.toggleEventName,
         onUpdateEventName: options.onUpdateEventName,
         placeholder: options.placeholder
       }));
+      */
     }
   });
 
