@@ -61,6 +61,11 @@ var LayoutManager = Backbone.View.extend({
     // Create a deferred instead of going off
     var def = view.deferred();
 
+    // DEBUGGING
+    if (view.template === "addons/cloudantauth/templates/login_pane") {
+      console.log("rendering login_panel view");
+    }
+
     // Ensure all nested Views are properly scrubbed if re-rendering.
     if (view.hasRendered) {
       view._removeViews();
@@ -70,6 +75,8 @@ var LayoutManager = Backbone.View.extend({
     manager.callback = function() {
       // Clean up asynchronous manager properties.
       delete manager.isAsync;
+      console.log("------------- DELETED async (1)");
+
       delete manager.callback;
 
       // Always emit a beforeRender event.
@@ -87,8 +94,22 @@ var LayoutManager = Backbone.View.extend({
       beforeRender.call(view, view);
     }
 
+    // this magically fixes everything and all is wonderful again
+//    if (view.template === "addons/cloudantauth/templates/login_pane") {
+//      manager.isAsync = false;
+//    }
+
     if (!manager.isAsync) {
+      if (view.template === "addons/cloudantauth/templates/login_pane") {
+        console.log("**** PAGE WILL LOAD FINE ****");
+      }
+
       manager.callback();
+
+    } else {
+      if (view.template === "addons/cloudantauth/templates/login_pane") {
+        console.log("**** PAGE WON'T LOAD **** (manager.isAsync: ", manager.isAsync, ")");
+      }
     }
 
     // Return this intermediary promise.
@@ -140,6 +161,7 @@ var LayoutManager = Backbone.View.extend({
       manager.callback = function(rendered) {
         // Clean up asynchronous manager properties.
         delete manager.isAsync;
+        console.log("------------- DELETED async (2)");
         delete manager.callback;
 
         root._applyTemplate(rendered, manager, def);
@@ -175,11 +197,19 @@ var LayoutManager = Backbone.View.extend({
           context = context.call(root);
         }
 
+
         // Set the internal callback to trigger once the asynchronous or
         // synchronous behavior has completed.
         manager.callback = function(contents) {
+
           // Clean up asynchronous manager properties.
-          delete manager.isAsync;
+          console.log("[done-render:", template, "]. This resets manager.isAsync");
+
+          // mwahahahah. Notice setting to false here affects the login_pane call
+          manager.isAsync = false;
+
+          console.log("------------- DELETED async (3)");
+//          delete manager.isAsync;
           delete manager.callback;
 
           done(context, contents);
@@ -239,6 +269,7 @@ var LayoutManager = Backbone.View.extend({
     var manager = this.__manager__;
 
     // Set this View's action to be asynchronous.
+    console.log("------------- (setting async to true for this request)");
     manager.isAsync = true;
 
     // Return the callback.
@@ -469,6 +500,12 @@ var LayoutManager = Backbone.View.extend({
     var parent = manager.parent;
     var rentManager = parent && parent.__manager__;
     var def = root.deferred();
+
+    if (parent) {
+      console.log("[layout render]: ", parent.template, manager.isAsync);
+    }
+
+    // "addons/cloudantauth/templates/login_pane"
 
     // Triggered once the render has succeeded.
     function resolve() {

@@ -49,6 +49,7 @@ define([
       // existing views in the layout.
       _.each(this.layoutViews, function(view){view.removeView();});
       this.layoutViews = {};
+      console.log("Layout.setTemplate()");
       return this.render().promise();
     },
 

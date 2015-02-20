@@ -79,8 +79,11 @@ function(app, $, _, Backbone, Bootstrap, Helpers, constants, Utils, FauxtonAPI, 
       if (JST[path]) {
         return JST[path];
       } else {
+        console.log("fetchTemplate - ", path);
+
         // Put fetch into `async-mode`.
         done = this.async();
+
         // Seek out the template asynchronously.
         return $.ajax({ url: app.root + path }).then(function(contents) {
           done(JST[path] = _.template(contents));
