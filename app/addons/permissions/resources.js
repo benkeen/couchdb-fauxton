@@ -35,6 +35,8 @@ function (app, FauxtonAPI ) {
       return window.location.origin + '/' + this.database.safeID() + '/_security';
     },
 
+    documentation: FauxtonAPI.constants.DOC_URLS.DB_PERMISSION,
+
     addItem: function (value, type, section) {
       var sectionValues = this.get(section);
 
