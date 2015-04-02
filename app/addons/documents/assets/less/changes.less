@@ -106,3 +106,19 @@
   margin-left: 20px;
 }
 
+.changes-polling {
+  float: right;
+  input {
+    margin: 0 8px 1px;
+  }
+  label {
+    display: inline-block;
+  }
+}
+
+/* hides the auto-enable changes list checkbox + label if the page is too small */
+@media all and (max-width: 1080px) {
+  .changes-polling {
+    display: none;
+  }
+}

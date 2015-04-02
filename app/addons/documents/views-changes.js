@@ -39,21 +39,12 @@ function (app, FauxtonAPI, Components, Changes, ChangesActions) {
 
 
   Views.ChangesReactWrapper = FauxtonAPI.View.extend({
-    initialize: function () {
-      this.filters = [];
-    },
-
     afterRender: function () {
-      ChangesActions.setChanges({
+      ChangesActions.initChanges({
         changes: this.model.changes,
-        filters: this.filters,
         databaseName: this.model.id
       });
       Changes.renderChanges(this.el);
-    },
-
-    establish: function () {
-      return [this.model.changes.fetchOnce({ prefill: true })];
     },
 
     cleanup: function () {

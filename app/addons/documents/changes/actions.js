@@ -13,9 +13,16 @@
 define([
   'app',
   'api',
-  'addons/documents/changes/actiontypes'
+  'addons/documents/changes/actiontypes',
+  'addons/documents/changes/stores',
+  'addons/documents/helpers'
 ],
-function (app, FauxtonAPI, ActionTypes) {
+function (app, FauxtonAPI, ActionTypes, Stores, Helpers) {
+
+  var changesStore = Stores.changesStore;
+  var pollingTimeout = 60000;
+  var currentRequest;
+
 
   return {
     toggleTabVisibility: function () {
@@ -38,11 +45,59 @@ function (app, FauxtonAPI, ActionTypes) {
       });
     },
 
-    setChanges: function (options) {
+    initChanges: function (options) {
       FauxtonAPI.dispatch({
-        type: ActionTypes.SET_CHANGES,
+        type: ActionTypes.INIT_CHANGES,
         options: options
       });
+      this.getLatestChanges();
+    },
+
+    getLatestChanges: function () {
+      var params = {};
+
+      var lastSeqNum = changesStore.getLastSeqNum();
+      if (lastSeqNum !== null) {
+        params.since = lastSeqNum;
+        params.feed = 'longpoll';
+        params.timeout = pollingTimeout;
+      } else {
+        params.limit = 100;
+      }
+
+      var query = $.param(params);
+      var db = app.utils.safeURLName(changesStore.getDatabaseName());
+      currentRequest = $.get('/' + db + '/_changes?' + query);
+      currentRequest.then(_.bind(this.updateChanges, this));
+    },
+
+    updateChanges: function (resp) {
+      var json = JSON.parse(resp);
+
+      // only bother updating the list of changes if the seq num has changed
+      var latestSeqNum = Helpers.getSeqNum(json.last_seq);
+      if (latestSeqNum !== changesStore.getLastSeqNum()) {
+        FauxtonAPI.dispatch({
+          type: ActionTypes.UPDATE_CHANGES,
+          changes: json.results,
+          seqNum: latestSeqNum
+        });
+      }
+
+      if (changesStore.pollingEnabled()) {
+        this.getLatestChanges();
+      }
+    },
+
+    togglePolling: function () {
+      FauxtonAPI.dispatch({ type: ActionTypes.TOGGLE_CHANGES_POLLING });
+
+      // the user just enabled polling. Start 'er up
+      if (changesStore.pollingEnabled()) {
+        this.getLatestChanges();
+      } else {
+        currentRequest.abort();
+      }
     }
   };
 
