@@ -18,6 +18,8 @@ module.exports = {
 
     /*jshint multistr: true */
     openDifferentDropdownsAndClick(client, '#header-dropdown-menu')
+      .waitForElementPresent('#new-ddoc', waitTime, false)
+      .waitForElementVisible('#new-ddoc', waitTime, false)
       .setValue('#new-ddoc', 'test_design_doc-selenium-1')
       .clearValue('#index-name')
       .setValue('#index-name', 'hasenindex')
@@ -26,7 +28,8 @@ module.exports = {
         editor.getSession().setValue("function (doc) { emit(\'hasehase\'); }");\
       ')
       .execute('$(".save")[0].scrollIntoView();')
-      .click('button.btn.btn-success.save')
+      .waitForElementPresent('button.btn.btn-success.save', waitTime, false)
+      .clickWhenVisible('button.btn.btn-success.save', waitTime, false)
       .waitForElementPresent('.prettyprint', waitTime, false)
       .waitForElementNotPresent('.loading-lines', waitTime, false)
       .assert.containsText('.prettyprint', 'hasehase')
@@ -41,6 +44,7 @@ module.exports = {
     /*jshint multistr: true */
     openDifferentDropdownsAndClick(client, '#header-dropdown-menu')
       .waitForElementPresent('#new-ddoc', waitTime, false)
+      .waitForElementVisible('#new-ddoc', waitTime, false)
       .setValue('#new-ddoc', 'test_design_doc-selenium-2')
       .clearValue('#index-name')
       .setValue('#index-name', 'gaenseindex')
@@ -50,7 +54,8 @@ module.exports = {
         editor.getSession().setValue("function (doc) { emit(\'gansgans\'); }");\
       ')
       .execute('$(".save")[0].scrollIntoView();')
-      .click('button.btn-success.save')
+      .waitForElementPresent('button.btn-success.save', waitTime, false)
+      .clickWhenVisible('button.btn-success.save', waitTime, false)
       .waitForElementPresent('.prettyprint', waitTime, false)
       .waitForElementNotPresent('.loading-lines', waitTime, false)
       .assert.containsText('.prettyprint', 'gansgans')
@@ -64,6 +69,8 @@ module.exports = {
     /*jshint multistr: true */
 
     openDifferentDropdownsAndClick(client, '#nav-header-testdesigndoc')
+      .waitForElementPresent('#index-name', waitTime, false)
+      .waitForElementVisible('#index-name', waitTime, false)
       .clearValue('#index-name')
       .setValue('#index-name', 'test-new-view')
       .sendKeys("textarea.ace_text-input", client.Keys.Enter)
@@ -72,7 +79,8 @@ module.exports = {
         editor.getSession().setValue("function (doc) { emit(\'enteente\', 1); }");\
       ')
       .execute('$(".save")[0].scrollIntoView();')
-      .click('button.btn-success.save')
+      .waitForElementPresent('button.btn-success.save', waitTime, false)
+      .clickWhenVisible('button.btn-success.save', waitTime, false)
       .waitForAttribute('#global-notifications', 'textContent', function (notification) {
         return (/View Saved./).test(notification.trim());
       })
@@ -100,7 +108,8 @@ function openDifferentDropdownsAndClick (client, dropDownElement) {
     .populateDatabase(newDatabaseName)
     .url(baseUrl + '/#/database/' + newDatabaseName + '/_all_docs')
     .waitForElementPresent(dropDownElement, waitTime, false)
-    .click(dropDownElement + ' a')
-    .click(dropDownElement + ' a[href*="new_view"]')
+    .waitForElementPresent(dropDownElement + ' a', waitTime, false)
+    .clickWhenVisible(dropDownElement + ' a', waitTime, false)
+    .clickWhenVisible(dropDownElement + ' a[href*="new_view"]', waitTime, false)
     .waitForElementPresent('.editor-wrapper', waitTime, false);
 }

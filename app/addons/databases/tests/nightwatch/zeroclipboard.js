@@ -29,10 +29,10 @@ module.exports = {
       .url(baseUrl)
 
       .waitForElementPresent('.api-url-btn', waitTime, false)
-      .click('.api-url-btn')
+      .clickWhenVisible('.api-url-btn', waitTime, false)
       .waitForElementVisible('.copy-url', waitTime, false)
       .moveTo('.copy-url')
-      .click('.copy-url')
+      .clickWhenVisible('.copy-url', waitTime, false)
       .mouseButtonDown('left')
       .mouseButtonUp('left')
       .closeNotification()

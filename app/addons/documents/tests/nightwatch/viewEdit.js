@@ -31,7 +31,8 @@ module.exports = {
         editor.getSession().setValue("function (doc) { emit(\'hasehase5000\', 1); }");\
       ')
       .execute('$(".save")[0].scrollIntoView();')
-      .click('button.btn-success.save')
+      .waitForElementPresent('button.btn-success.save', waitTime, false)
+      .clickWhenVisible('button.btn-success.save')
 
       .waitForElementNotVisible('.global-notification', waitTime, false)
       .waitForElementNotPresent('.loading-lines', waitTime, false)
@@ -58,7 +59,8 @@ module.exports = {
         editor._emit(\'blur\');\
       ')
       .execute('$(".save")[0].scrollIntoView();')
-      .clickWhenVisible('button.btn-success.save')
+      .waitForElementPresent('button.btn-success.save', waitTime, false)
+      .clickWhenVisible('button.btn-success.save', waitTime, false)
       .waitForElementNotVisible('.global-notification', waitTime, false)
       .waitForElementNotPresent('.loading-lines', waitTime, false)
       .assert.containsText('.prettyprint', 'hasehase5000')

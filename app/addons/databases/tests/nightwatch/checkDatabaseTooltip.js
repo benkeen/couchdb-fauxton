@@ -27,7 +27,7 @@ module.exports = {
 
       // delete the document manually. This'll ensure the database page has at least one "!" icon
       .waitForElementPresent('#dashboard-content a[href="#/database/' + newDatabaseName + '/_all_docs"]', waitTime, false)
-      .click('#dashboard-content a[href="#/database/' + newDatabaseName + '/_all_docs"]')
+      .clickWhenVisible('#dashboard-content a[href="#/database/' + newDatabaseName + '/_all_docs"]', waitTime, false)
 
       //this opens the alternative header
       .clickWhenVisible('label[for="checkbox-' + newDocumentName + '"]', waitTime, false)
