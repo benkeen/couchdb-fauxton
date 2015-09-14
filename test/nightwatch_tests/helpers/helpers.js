@@ -20,7 +20,7 @@ module.exports = {
   getNanoInstance: function () {
     return nano(this.test_settings.db_url);
   },
-  beforeEach: function (done) {
+  beforeEach: function (browser, done) {
     var nano = module.exports.getNanoInstance(),
         database = module.exports.testDatabaseName;
 
@@ -41,7 +41,7 @@ module.exports = {
     });
   },
 
-  afterEach: function (done) {
+  afterEach: function (browser, done) {
     var nano = module.exports.getNanoInstance(),
         database = module.exports.testDatabaseName;
 
