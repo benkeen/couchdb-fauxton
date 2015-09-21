@@ -318,6 +318,15 @@ function (app, FauxtonAPI, React, ZeroClipboard) {
     }
   });
 
+  var NotificationCenterController = React.createClass({
+    render: function () {
+      return (
+        <div className="notification-center">
+        </div>
+      );
+    }
+  });
+
 
   return {
     Clipboard: Clipboard,
@@ -325,7 +334,8 @@ function (app, FauxtonAPI, React, ZeroClipboard) {
     CodeFormat: CodeFormat,
     Tray: Tray,
     Pagination: Pagination,
-    ConfirmationModal: ConfirmationModal
+    ConfirmationModal: ConfirmationModal,
+    NotificationCenterController: NotificationCenterController
   };
 
 });

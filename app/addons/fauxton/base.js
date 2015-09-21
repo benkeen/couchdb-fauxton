@@ -14,14 +14,16 @@ define([
   "app",
   "api",
   "addons/fauxton/components",
+  'addons/fauxton/actions',
   "addons/fauxton/navigation/components.react",
   "addons/fauxton/navigation/actions",
   "plugins/zeroclipboard/ZeroClipboard"
 ],
 
-function (app, FauxtonAPI, Components, NavbarReactComponents, NavigationActions, ZeroClipboard) {
+function (app, FauxtonAPI, Components, Actions, NavbarReactComponents, NavigationActions, ZeroClipboard) {
 
   var Fauxton = FauxtonAPI.addon();
+
   FauxtonAPI.addNotification = function (options) {
     options = _.extend({
       msg: "Notification Event Triggered!",
@@ -29,6 +31,9 @@ function (app, FauxtonAPI, Components, NavbarReactComponents, NavigationActions,
       selector: "#global-notifications",
       escape: true
     }, options);
+
+    // log all notifications in a store
+    Actions.addNotification(options);
 
     var view = new Fauxton.Notification(options);
     return view.renderNotification();
