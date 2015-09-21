@@ -12,15 +12,16 @@
 
 define([
   'api',
-  'addons/fauxton/actiontypes'
+  'addons/fauxton/actiontypes',
+  'moment'
 ],
 
-function (FauxtonAPI, ActionTypes) {
+function (FauxtonAPI, ActionTypes, moment) {
   var Stores = {};
 
   // static var used to assign a unique ID to each notification
   var counter = 0;
-  var validNotificationTypes = ['success', 'error', 'warning', 'info'];
+  var validNotificationTypes = ['success', 'error', 'info'];
 
 
   /**
@@ -41,26 +42,75 @@ function (FauxtonAPI, ActionTypes) {
 
     reset: function () {
       this._notifications = [];
+      this._notificationCenterVisible = false;
+      this._selectedNotificationFilter = 'all';
+    },
+
+    isNotificationCenterVisible: function () {
+      return this._notificationCenterVisible;
     },
 
     addNotification: function (info) {
-      if (_.empty(info.type) || _.contains(validNotificationTypes, info.type)) {
+      if (_.isEmpty(info.type) || !_.contains(validNotificationTypes, info.type)) {
         console.warn('Invalid message type: ', info);
         return;
       }
 
       info.notificationId = ++counter;
+      info.time = moment();
+
       this._notifications.push(info);
     },
 
-    getNotificationsByType: function (type) {
-      return _.where(this._notifications, { type: type });
+    getNotifications: function (type) {
+      return this._notifications;
+    },
+
+    clearNotification: function (notificationId) {
+
+    },
+
+    getSelectedNotificationFilter: function () {
+      return this._selectedNotificationFilter;
+    },
+
+    setNotificationFilter: function (filter) {
+      if ((_.isEmpty(filter) || !_.contains(validNotificationTypes, filter)) && filter !== 'all') {
+        console.warn('Invalid notification filter: ', filter);
+        return;
+      }
+      this._selectedNotificationFilter = filter;
     },
 
     dispatch: function (action) {
       switch (action.type) {
         case ActionTypes.ADD_NOTIFICATION:
           this.addNotification(action.options.info);
+          this.triggerChange();
+        break;
+
+        case ActionTypes.CLEAR_ALL_NOTIFICATIONS:
+          this._notifications = [];
+          this.triggerChange();
+        break;
+
+        case ActionTypes.CLEAR_SINGLE_NOTIFICATION:
+          this.clearNotification(action.options.notificationId);
+          this.triggerChange();
+        break;
+
+        case ActionTypes.SHOW_NOTIFICATION_CENTER:
+          this._notificationCenterVisible = true;
+          this.triggerChange();
+        break;
+
+        case ActionTypes.HIDE_NOTIFICATION_CENTER:
+          this._notificationCenterVisible = false;
+          this.triggerChange();
+        break;
+
+        case ActionTypes.SELECT_NOTIFICATION_FILTER:
+          this.setNotificationFilter(action.options.filter);
           this.triggerChange();
         break;
 

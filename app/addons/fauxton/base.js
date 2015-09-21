@@ -14,13 +14,14 @@ define([
   "app",
   "api",
   "addons/fauxton/components",
+  "addons/fauxton/components.react",
   'addons/fauxton/actions',
   "addons/fauxton/navigation/components.react",
   "addons/fauxton/navigation/actions",
   "plugins/zeroclipboard/ZeroClipboard"
 ],
 
-function (app, FauxtonAPI, Components, Actions, NavbarReactComponents, NavigationActions, ZeroClipboard) {
+function (app, FauxtonAPI, Components, ReactComponents, Actions, NavbarReactComponents, NavigationActions, ZeroClipboard) {
 
   var Fauxton = FauxtonAPI.addon();
 
@@ -56,11 +57,12 @@ function (app, FauxtonAPI, Components, Actions, NavbarReactComponents, Navigatio
 
 
   Fauxton.initialize = function () {
-    app.apiBar = new Components.ApiBar();
 
+    app.apiBar = new Components.ApiBar();
     FauxtonAPI.masterLayout.setView("#api-navbar", app.apiBar, true);
     app.apiBar.render();
     FauxtonAPI.masterLayout.apiBar = app.apiBar;
+
 
     FauxtonAPI.RouteObject.on('beforeFullRender', function (routeObject) {
       NavigationActions.setNavbarActiveLink(_.result(routeObject, 'selectedHeader'));
@@ -82,11 +84,22 @@ function (app, FauxtonAPI, Components, Actions, NavbarReactComponents, Navigatio
     FauxtonAPI.RouteObject.on('renderComplete', function (routeObject) {
       var masterLayout = FauxtonAPI.masterLayout;
 
+      var notificationCenterBtnEl = $('#notification-center-btn')[0];
+      if (notificationCenterBtnEl) {
+        masterLayout.notificationCenterBtn = ReactComponents.renderNotificationCenterBtn(notificationCenterBtnEl);
+      }
+
       if (routeObject.get('apiUrl')) {
         masterLayout.apiBar.show();
         masterLayout.apiBar.update(routeObject.get('apiUrl'));
       } else {
         masterLayout.apiBar.hide();
+      }
+
+      if (routeObject.get('hideNotificationCenter')) {
+        masterLayout.notificationCenterBtn.hide();
+      } else {
+        masterLayout.notificationCenterBtn.show();
       }
     });
 
@@ -94,6 +107,8 @@ function (app, FauxtonAPI, Components, Actions, NavbarReactComponents, Navigatio
     if (primaryNavBarEl) {
       NavbarReactComponents.renderNavBar(primaryNavBarEl);
     }
+
+    ReactComponents.renderNotificationCenter('#notification-center-panel');
 
     var versionInfo = new Fauxton.VersionInfo();
 
