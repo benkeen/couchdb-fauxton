@@ -222,17 +222,6 @@ table.databases {
   }
 }
 
-#sidebar-content {
-  position: absolute;
-  top: 0;
-  width: @sidebarWidth;
-  left: 0;
-  background-color: @secondarySidebar;
-  > div.inner {
-    display: block;
-  }
-}
-
 #dashboard-content .scrollable {
   height: auto;
   overflow-y: auto;
@@ -249,8 +238,6 @@ table.databases {
 /*ONE PANEL TEMPLATE ONLY STYLES  AKA _all_dbs */
 
 .result-tools{
-  border-bottom: 1px solid #999999;
-  padding: 5px 0;
   border-bottom: 1px solid #999999;
   padding: 10px 0;
   float: left;
@@ -388,14 +375,15 @@ div.spinner {
 
 //---header--//
 #dashboard > header {
-  height: 65px;
   background-color: @breadcrumbBG;
   .bottom-shadow-border();
 
   /* this is necessary to allow the 6px box shadow overlap the panels below */
-  position: absolute;
-  width: 100%;
-  z-index: 1;
+  &>div {
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+  }
 }
 
 body #dashboard .two-panel-header {

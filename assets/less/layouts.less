@@ -131,3 +131,21 @@ body #dashboard.two-pane {
     }
   }
 }
+
+body #dashboard.template-with-sidebar {
+  header {
+    .flex(0 0 65px);
+  }
+  #sidebar-content {
+    .flex(0 0 330px);
+    overflow: auto;
+    overflow-x: hidden;
+  }
+  .template-content {
+    overflow: hidden;
+  }
+  #dashboard-content {
+    border-left: 1px solid @grayLight;
+    .left-shadow-border();
+  }
+}
