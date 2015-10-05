@@ -376,10 +376,13 @@ div.spinner {
 //---header--//
 #dashboard > header {
   background-color: @breadcrumbBG;
-  .bottom-shadow-border();
+  height: 64px;
 
-  /* this is necessary to allow the 6px box shadow overlap the panels below */
+  /* the position absolute is necessary to allow the 6px box shadow overlap the panels below. The parent <header>
+   ensures the flexbox height is respected */
   &>div {
+    height: 65px;
+    .bottom-shadow-border();
     position: absolute;
     width: 100%;
     z-index: 1;
@@ -404,7 +407,7 @@ body #dashboard .two-panel-header {
 
 
 #breadcrumbs {
-  height: @collapsedNavWidth;
+  /*height: @collapsedNavWidth;*/
 
   /* these styles are for the new header*/
   .header-left{
