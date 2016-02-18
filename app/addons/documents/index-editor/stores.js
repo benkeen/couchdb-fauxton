@@ -42,7 +42,7 @@ function (FauxtonAPI, ActionTypes) {
       this._designDocs = options.designDocs;
       this._designDocId = options.designDocId;
       this._designDocChanged = false;
-      this._viewNameChanged = false;
+      this._originalViewName = this._viewName;
       this.setView();
       this._isLoading = false;
     },
@@ -83,7 +83,6 @@ function (FauxtonAPI, ActionTypes) {
       return this._designDocs.find(function (ddoc) {
         return this._designDocId == ddoc.id;
       }, this).dDocModel();
-
     },
 
     getDesignDocs: function () {
@@ -120,23 +119,28 @@ function (FauxtonAPI, ActionTypes) {
 
     setViewName: function (name) {
       this._viewName = name;
-      this._viewNameChanged = true;
     },
 
     hasCustomReduce: function () {
-      if (!this.hasReduce()) { return false; }
-
+      if (!this.hasReduce()) {
+        return false;
+      }
       return !_.contains(this.builtInReduces(), this.getReduce());
     },
 
     hasReduce: function () {
-      if (!this.getReduce()) { return false; }
-
+      if (!this.getReduce()) {
+        return false;
+      }
       return true;
     },
 
     hasViewNameChanged: function () {
-      return this._viewNameChanged;
+      return this._viewName !== this._originalViewName;
+    },
+
+    getOriginalViewName: function () {
+      return this._originalViewName;
     },
 
     builtInReduces: function () {
@@ -147,11 +151,9 @@ function (FauxtonAPI, ActionTypes) {
       if (!this.hasReduce()) {
         return 'NONE';
       }
-
       if (this.hasCustomReduce()) {
         return 'CUSTOM';
       }
-
       return this.getReduce();
     },
 
@@ -164,12 +166,10 @@ function (FauxtonAPI, ActionTypes) {
         this.setReduce(null);
         return;
       }
-
       if (selectedReduce === 'CUSTOM') {
         this.setReduce(this.defaultReduce);
         return;
       }
-
       this.setReduce(selectedReduce);
     },
 
@@ -246,7 +246,6 @@ function (FauxtonAPI, ActionTypes) {
   });
 
   Stores.indexEditorStore = new Stores.IndexEditorStore();
-
   Stores.indexEditorStore.dispatchToken = FauxtonAPI.dispatcher.register(Stores.indexEditorStore.dispatch);
 
   return Stores;

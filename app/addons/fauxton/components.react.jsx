@@ -332,7 +332,10 @@ function (app, FauxtonAPI, React, ReactDOM, ZeroClipboard, ReactBootstrap) {
   var ConfirmationModal = React.createClass({
     propTypes: {
       visible: React.PropTypes.bool.isRequired,
-      text: React.PropTypes.string.isRequired,
+      text: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.element
+      ]).isRequired,
       onClose: React.PropTypes.func.isRequired,
       onSubmit: React.PropTypes.func.isRequired
     },
@@ -348,15 +351,17 @@ function (app, FauxtonAPI, React, ReactDOM, ZeroClipboard, ReactBootstrap) {
     },
 
     render: function () {
+      var content = <p>{this.props.text}</p>;
+      if (!_.isString(this.props.text)) {
+        content = this.props.text;
+      }
       return (
         <Modal dialogClassName="confirmation-modal" show={this.props.visible} onHide={this.props.onClose}>
           <Modal.Header closeButton={true}>
             <Modal.Title>{this.props.title}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>
-              {this.props.text}
-            </p>
+            {content}
           </Modal.Body>
           <Modal.Footer>
             <button className="btn" onClick={this.props.onClose}><i className="icon fonticon-cancel-circled"></i> Cancel</button>

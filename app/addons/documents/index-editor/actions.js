@@ -15,9 +15,11 @@ define([
   'api',
   'addons/documents/resources',
   'addons/documents/index-editor/actiontypes',
-  'addons/documents/index-results/actions'
+  'addons/documents/index-results/actions',
+  'addons/documents/sidebar/actiontypes'
 ],
-function (app, FauxtonAPI, Documents, ActionTypes, IndexResultsActions) {
+function (app, FauxtonAPI, Documents, ActionTypes, IndexResultsActions, SidebarActionTypes) {
+
   var ActionHelpers = {
     createNewDesignDoc: function (id, database) {
       var designDoc = {
@@ -33,7 +35,6 @@ function (app, FauxtonAPI, Documents, ActionTypes, IndexResultsActions) {
       return _.find(designDocs, function (doc) {
         return doc.id === designDocId;
       }).dDocModel();
-
     }
   };
 
@@ -90,13 +91,14 @@ function (app, FauxtonAPI, Documents, ActionTypes, IndexResultsActions) {
       var designDoc;
       var designDocs = viewInfo.designDocs;
 
+      console.log(viewInfo);
+
       if (_.isUndefined(viewInfo.designDocId)) {
         FauxtonAPI.addNotification({
-          msg:  "Please enter a design doc name.",
-          type: "error",
+          msg: 'Please enter a design doc name.',
+          type: 'error',
           clear: true
         });
-
         return;
       }
 
@@ -104,68 +106,56 @@ function (app, FauxtonAPI, Documents, ActionTypes, IndexResultsActions) {
         designDoc = ActionHelpers.createNewDesignDoc(viewInfo.designDocId, viewInfo.database);
       } else {
         designDoc = ActionHelpers.findDesignDoc(designDocs, viewInfo.designDocId);
+        if (viewInfo.hasViewNameChanged) {
+         designDoc.removeDdocView(viewInfo.originalViewName);
+        }
       }
 
-      var result = designDoc.setDdocView(viewInfo.viewName,
-                            viewInfo.map,
-                            viewInfo.reduce);
+      var result = designDoc.setDdocView(viewInfo.viewName, viewInfo.map, viewInfo.reduce);
+      if (!result) {
+        return;
+      }
 
-      if (result) {
+      FauxtonAPI.addNotification({
+        msg: 'Saving View...',
+        type: 'info',
+        clear: true
+      });
 
+      designDoc.save().then(function () {
         FauxtonAPI.addNotification({
-          msg:  "Saving View...",
-          type: "info",
+          msg: 'View saved.',
+          type: 'success',
           clear: true
         });
-
-        designDoc.save().then(function () {
-          FauxtonAPI.addNotification({
-            msg:  "View Saved.",
-            type: "success",
-            clear: true
-          });
-
-
-          if (_.any([viewInfo.designDocChanged, viewInfo.hasViewNameChanged, viewInfo.newDesignDoc, viewInfo.newView])) {
-            FauxtonAPI.dispatch({
-              type: ActionTypes.VIEW_SAVED
-            });
-            var fragment = FauxtonAPI.urls('view', 'showNewlySavedView', viewInfo.database.safeID(), designDoc.safeID(), app.utils.safeURLName(viewInfo.viewName));
-            FauxtonAPI.navigate(fragment, {trigger: true});
-          } else {
-            this.updateDesignDoc(designDoc);
-          }
-
-          IndexResultsActions.reloadResultsList();
-        }.bind(this));
-      }
-    },
-
-    updateDesignDoc: function (designDoc) {
-      FauxtonAPI.dispatch({
-        type: ActionTypes.VIEW_UPDATE_DESIGN_DOC,
-        designDoc: designDoc.toJSON()
+        FauxtonAPI.dispatch({ type: ActionTypes.VIEW_SAVED });
+        var fragment = FauxtonAPI.urls('view', 'showView', viewInfo.database.safeID(), designDoc.safeID(), app.utils.safeURLName(viewInfo.viewName));
+        FauxtonAPI.navigate(fragment, { trigger: true });
       });
     },
 
     deleteView: function (options) {
-      var viewName = options.viewName;
-      var database = options.database;
-      var designDoc = ActionHelpers.findDesignDoc(options.designDocs, options.designDocId);
+      options.designDoc.removeDdocView(options.indexName);
+
       var promise;
-
-      designDoc.removeDdocView(viewName);
-
-      if (designDoc.hasViews()) {
-        promise = designDoc.save();
+      if (options.designDoc.hasViews()) {
+        promise = options.designDoc.save();
       } else {
-        promise = designDoc.destroy();
+        promise = options.designDoc.destroy();
       }
 
       promise.then(function () {
-        var url = FauxtonAPI.urls('allDocs', 'app', database.safeID(), '?limit=' + FauxtonAPI.constants.DATABASES.DOCUMENT_LIMIT);
+        var url = FauxtonAPI.urls('allDocs', 'app', options.database.safeID(), '?limit=' + FauxtonAPI.constants.DATABASES.DOCUMENT_LIMIT);
         FauxtonAPI.navigate(url);
         FauxtonAPI.triggerRouteEvent('reloadDesignDocs');
+
+        FauxtonAPI.addNotification({
+          msg: 'The <code>' + options.indexName + '</code> index has been deleted.',
+          type: 'info',
+          escape: false,
+          clear: true
+        });
+        FauxtonAPI.dispatch({ type: SidebarActionTypes.SIDEBAR_HIDE_DELETE_INDEX_MODAL });
       });
     },
 

@@ -28,20 +28,31 @@ define([
   'addons/documents/pagination/pagination.react',
   'addons/documents/header/header.react',
   'addons/documents/header/header.actions',
+  'addons/documents/sidebar/actions'
 ],
 
 function (app, FauxtonAPI, Helpers, BaseRoute, Documents, IndexEditorComponents, ActionsIndexEditor,
           Databases, Components, IndexResultsStores, IndexResultsActions,
-          IndexResultsComponents, ReactPagination, ReactHeader, ReactHeaderActions) {
+          IndexResultsComponents, ReactPagination, ReactHeader, ReactHeaderActions, SidebarActions) {
 
 
   var IndexEditorAndResults = BaseRoute.extend({
-    layout: 'two_pane',
+    layout: 'with_tabs_sidebar',
     routes: {
-      'database/:database/new_view': 'newViewEditor',
-      'database/:database/new_view/:designDoc': 'newViewEditor',
+      'database/:database/new_view': {
+        route: 'createView',
+        roles: ['fx_loggedIn']
+      },
+      'database/:database/new_view/:designDoc': {
+        route: 'createView',
+        roles: ['fx_loggedIn']
+      },
       'database/:database/_design/:ddoc/_view/:view': {
-        route: 'viewFn',
+        route: 'showView',
+        roles: ['fx_loggedIn']
+      },
+      'database/:database/_design/:ddoc/_view/:view/edit': {
+        route: 'editView',
         roles: ['fx_loggedIn']
       }
     },
@@ -53,15 +64,18 @@ function (app, FauxtonAPI, Helpers, BaseRoute, Documents, IndexEditorComponents,
       this.database = new Databases.Model({id: databaseName});
       this.allDatabases = new Databases.List();
       this.createDesignDocsCollection();
+      this.addLeftHeader();
+      this.addSidebar();
     },
 
     establish: function () {
       return [
+        this.designDocs.fetch({ reset: true }),
         this.allDatabases.fetchOnce()
       ];
     },
 
-    viewFn: function (databaseName, ddoc, viewName) {
+    showView: function (databaseName, ddoc, viewName) {
       var params = this.createParams(),
           urlParams = params.urlParams,
           docParams = params.docParams,
@@ -71,17 +85,7 @@ function (app, FauxtonAPI, Helpers, BaseRoute, Documents, IndexEditorComponents,
         database: this.database
       }));
 
-      var url = FauxtonAPI.urls('allDocs', 'app', this.database.safeID(), '?limit=' + FauxtonAPI.constants.DATABASES.DOCUMENT_LIMIT);
-      this.breadcrumbs = this.setView('#breadcrumbs', new Components.Breadcrumbs({
-        toggleDisabled: true,
-        crumbs: [
-          {'type': 'back', 'link': Helpers.getPreviousPage(this.database)},
-          {'name': this.database.id, 'link': url }
-        ]
-      }));
-
       viewName = viewName.replace(/\?.*$/, '');
-
       this.setComponent('#footer', ReactPagination.Footer);
 
       this.indexedDocs = new Documents.IndexCollection(null, {
@@ -109,9 +113,13 @@ function (app, FauxtonAPI, Helpers, BaseRoute, Documents, IndexEditorComponents,
         designDocId: '_design/' + decodeDdoc
       });
 
-      this.setComponent('#react-headerbar', ReactHeader.BulkDocumentHeaderController, {showIncludeAllDocs: true});
+      SidebarActions.selectNavItem('designDoc', {
+        designDocName: ddoc,
+        designDocSection: 'Views',
+        indexName: viewName
+      });
 
-      this.setComponent('#left-content', IndexEditorComponents.EditorController);
+      this.setComponent('#react-headerbar', ReactHeader.BulkDocumentHeaderController, {showIncludeAllDocs: true});
       this.setComponent('#dashboard-lower-content', IndexResultsComponents.List);
 
       this.apiUrl = function () {
@@ -121,8 +129,7 @@ function (app, FauxtonAPI, Helpers, BaseRoute, Documents, IndexEditorComponents,
       this.showQueryOptions(urlParams, ddoc, viewName);
     },
 
-    newViewEditor: function (database, _designDoc) {
-      var params = app.getParams();
+    createView: function (database, _designDoc) {
       var newDesignDoc = true;
       var designDoc;
 
@@ -131,15 +138,7 @@ function (app, FauxtonAPI, Helpers, BaseRoute, Documents, IndexEditorComponents,
         newDesignDoc = false;
       }
 
-      var url = FauxtonAPI.urls('allDocs', 'app', this.database.safeID(), '?limit=' + FauxtonAPI.constants.DATABASES.DOCUMENT_LIMIT);
-      this.breadcrumbs = this.setView('#breadcrumbs', new Components.Breadcrumbs({
-        toggleDisabled: true,
-        crumbs: [
-          { type: 'back', link: Helpers.getPreviousPage(this.database) },
-          { name: 'Create Index', link: url }
-        ]
-      }));
-
+      // TODO clean this up; establish() is already requesting a design doc
       ActionsIndexEditor.fetchDesignDocsBeforeEdit({
         viewName: 'new-view',
         newView: true,
@@ -149,11 +148,30 @@ function (app, FauxtonAPI, Helpers, BaseRoute, Documents, IndexEditorComponents,
         newDesignDoc: newDesignDoc
       });
 
-      this.setComponent('#left-content', IndexEditorComponents.EditorController);
-      this.setComponent('#dashboard-lower-content', IndexResultsComponents.List);
+      this.removeComponent('#react-headerbar');
+      this.removeComponent('#footer');
+      this.setComponent('#dashboard-lower-content', IndexEditorComponents.EditorController);
+      SidebarActions.selectNavItem('');
+    },
 
-      IndexResultsActions.clearResults();
-      IndexResultsActions.resultsListReset();
+    editView: function (databaseName, ddocName, viewName) {
+      ActionsIndexEditor.fetchDesignDocsBeforeEdit({
+        viewName: viewName,
+        newView: false,
+        database: this.database,
+        designDocs: this.designDocs,
+        designDocId: '_design/' + ddocName
+      });
+
+      SidebarActions.selectNavItem('designDoc', {
+        designDocName: ddocName,
+        designDocSection: 'Views',
+        indexName: viewName
+      });
+
+      this.removeComponent('#react-headerbar');
+      this.removeComponent('#footer');
+      this.setComponent('#dashboard-lower-content', IndexEditorComponents.EditorController);
     }
 
   });

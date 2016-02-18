@@ -13,23 +13,34 @@
 define([
   'app',
   'api',
+  'react',
   'addons/documents/sidebar/actiontypes'
 ],
 
-function (app, FauxtonAPI, ActionTypes) {
+function (app, FauxtonAPI, React, ActionTypes) {
   var Stores = {};
 
   Stores.SidebarStore = FauxtonAPI.Store.extend({
 
     initialize: function () {
+      this.reset();
+    },
+
+    reset: function () {
+      this._designDocs = new Backbone.Collection();
       this._selected = {
         navItem: 'all-docs',
         designDocName: '',
-        designDocSection: '', // metadata / name of index group ("Views", etc.)
+        designDocSection: '', // 'metadata' / name of index group ("Views", etc.)
         indexName: ''
       };
       this._loading = true;
       this._toggledSections = {};
+      this._deleteIndexModalVisible = false;
+      this._currentIndexName = '';
+      this._currentDesignDocName = '';
+      this._deleteIndexModalText = '';
+      this._deleteIndexModalOnSubmit = function () { };
     },
 
     newOptions: function (options) {
@@ -47,6 +58,18 @@ function (app, FauxtonAPI, ActionTypes) {
           indexName: ''
         };
       }
+    },
+
+    isDeleteIndexModalVisible: function () {
+      return this._deleteIndexModalVisible;
+    },
+
+    getDeleteIndexModalText: function () {
+      return this._deleteIndexModalText;
+    },
+
+    getDeleteIndexModalOnSubmit: function () {
+      return this._deleteIndexModalOnSubmit;
     },
 
     isLoading: function () {
@@ -134,6 +157,10 @@ function (app, FauxtonAPI, ActionTypes) {
     },
 
     getDesignDocs: function () {
+      return this._designDocs;
+    },
+
+    getDesignDocList: function () {
       if (this.isLoading()) {
         return {};
       }
@@ -150,6 +177,26 @@ function (app, FauxtonAPI, ActionTypes) {
         doc.safeId = app.utils.safeURLName(doc._id.replace(/^_design\//, ""));
         return _.extend(doc, doc.doc);
       });
+    },
+
+    showDeleteIndexModal: function (params) {
+      this._currentIndexName = params.indexName;
+      this._currentDesignDocName = params.designDocName;
+      this._deleteIndexModalVisible = true;
+      this._deleteIndexModalText = (<div>Are you sure you want to delete the <code>{this._currentIndexName}</code> index?</div>);
+      this._deleteIndexModalOnSubmit = params.onDelete;
+    },
+
+    getCurrentIndexName: function () {
+      return this._currentIndexName;
+    },
+
+    getCurrentDesignDoc: function () {
+      var designDoc = this._designDocs.find(function (ddoc) {
+        return '_design/' + this._currentDesignDocName === ddoc.id;
+      }, this);
+
+      return (designDoc) ? designDoc.dDocModel() : null;
     },
 
     dispatch: function (action) {
@@ -171,6 +218,14 @@ function (app, FauxtonAPI, ActionTypes) {
         break;
 
         case ActionTypes.SIDEBAR_REFRESH:
+        break;
+
+        case ActionTypes.SIDEBAR_SHOW_DELETE_INDEX_MODAL:
+          this.showDeleteIndexModal(action.options);
+        break;
+
+        case ActionTypes.SIDEBAR_HIDE_DELETE_INDEX_MODAL:
+          this._deleteIndexModalVisible = false;
         break;
 
         default:

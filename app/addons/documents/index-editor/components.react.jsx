@@ -21,7 +21,7 @@ define([
 ],
 
 function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) {
-  var indexEditorStore = Stores.indexEditorStore;
+  var store = Stores.indexEditorStore;
   var getDocUrl = app.helpers.getDocUrl;
   var StyledSelect = ReactComponents.StyledSelect;
   var CodeEditorPanel = ReactComponents.CodeEditorPanel;
@@ -29,13 +29,14 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
   var ConfirmButton = ReactComponents.ConfirmButton;
   var LoadLines = ReactComponents.LoadLines;
 
+
   var DesignDocSelector = React.createClass({
 
     getStoreState: function () {
       return {
-        designDocId: indexEditorStore.getDesignDocId(),
-        designDocs: indexEditorStore.getDesignDocs(),
-        newDesignDoc: indexEditorStore.isNewDesignDoc()
+        designDocId: store.getDesignDocId(),
+        designDocs: store.getDesignDocs(),
+        newDesignDoc: store.isNewDesignDoc()
       };
     },
 
@@ -125,11 +126,11 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
     },
 
     componentDidMount: function () {
-      indexEditorStore.on('change', this.onChange, this);
+      store.on('change', this.onChange, this);
     },
 
     componentWillUnmount: function () {
-      indexEditorStore.off('change', this.onChange);
+      store.off('change', this.onChange);
     }
 
   });
@@ -138,11 +139,11 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
 
     getStoreState: function () {
       return {
-        reduce: indexEditorStore.getReduce(),
-        reduceOptions: indexEditorStore.reduceOptions(),
-        reduceSelectedOption: indexEditorStore.reduceSelectedOption(),
-        hasCustomReduce: indexEditorStore.hasCustomReduce(),
-        hasReduce: indexEditorStore.hasReduce()
+        reduce: store.getReduce(),
+        reduceOptions: store.reduceOptions(),
+        reduceSelectedOption: store.reduceSelectedOption(),
+        hasCustomReduce: store.hasCustomReduce(),
+        hasReduce: store.hasReduce()
       };
     },
 
@@ -225,70 +226,29 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
     },
 
     componentDidMount: function () {
-      indexEditorStore.on('change', this.onChange, this);
+      store.on('change', this.onChange, this);
     },
 
     componentWillUnmount: function () {
-      indexEditorStore.off('change', this.onChange);
+      store.off('change', this.onChange);
     }
   });
 
-  var DeleteView = React.createClass({
-    getStoreState: function () {
-      return {
-        isNewView: indexEditorStore.isNewView(),
-        designDocs: indexEditorStore.getDesignDocs(),
-        viewName: indexEditorStore.getViewName(),
-        designDocId: indexEditorStore.getDesignDocId(),
-        database: indexEditorStore.getDatabase()
-      };
-    },
-
-    getInitialState: function () {
-      return this.getStoreState();
-    },
-
-    render: function () {
-      if (this.state.isNewView) {
-        return null;
-      }
-
-      return (
-        <button onClick={this.deleteView} className="btn btn-danger delete">
-          <i className="icon fonticon-cancel-circled"></i>
-          Delete
-        </button>
-      );
-    },
-
-    deleteView: function (event) {
-      event.preventDefault();
-
-      if (!confirm('Are you sure you want to delete this view?')) {return;}
-
-      Actions.deleteView({
-        designDocs: this.state.designDocs,
-        viewName: this.state.viewName,
-        designDocId: this.state.designDocId,
-        database: this.state.database
-      });
-    }
-
-  });
 
   var Editor = React.createClass({
     getStoreState: function () {
       return {
-        hasViewNameChanged: indexEditorStore.hasViewNameChanged(),
-        database: indexEditorStore.getDatabase(),
-        isNewView: indexEditorStore.isNewView(),
-        viewName: indexEditorStore.getViewName(),
-        designDocs: indexEditorStore.getDesignDocs(),
-        hasDesignDocChanged: indexEditorStore.hasDesignDocChanged(),
-        newDesignDoc: indexEditorStore.isNewDesignDoc(),
-        designDocId: indexEditorStore.getDesignDocId(),
-        map: indexEditorStore.getMap(),
-        isLoading: indexEditorStore.isLoading()
+        hasViewNameChanged: store.hasViewNameChanged(),
+        originalViewName: store.getOriginalViewName(),
+        database: store.getDatabase(),
+        isNewView: store.isNewView(),
+        viewName: store.getViewName(),
+        designDocs: store.getDesignDocs(),
+        hasDesignDocChanged: store.hasDesignDocChanged(),
+        newDesignDoc: store.isNewDesignDoc(),
+        designDocId: store.getDesignDocId(),
+        map: store.getMap(),
+        isLoading: store.isLoading()
       };
     },
 
@@ -301,16 +261,16 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
     },
 
     componentDidMount: function () {
-      indexEditorStore.on('change', this.onChange, this);
+      store.on('change', this.onChange, this);
     },
 
     componentWillUnmount: function () {
-      indexEditorStore.off('change', this.onChange);
+      store.off('change', this.onChange);
     },
 
     hasErrors: function () {
       var mapEditorErrors = this.refs.mapEditor.getEditor().hasErrors();
-      var customReduceErrors = (indexEditorStore.hasCustomReduce()) ? this.refs.reduceEditor.getEditor().hasErrors() : false;
+      var customReduceErrors = (store.hasCustomReduce()) ? this.refs.reduceEditor.getEditor().hasErrors() : false;
       return mapEditorErrors || customReduceErrors;
     },
 
@@ -319,7 +279,7 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
 
       if (this.hasErrors()) {
         FauxtonAPI.addNotification({
-          msg:  'Please fix the Javascript errors and try again.',
+          msg: 'Please fix the Javascript errors and try again.',
           type: 'error',
           clear: true
         });
@@ -334,14 +294,15 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
         newDesignDoc: this.state.newDesignDoc,
         designDocChanged: this.state.hasDesignDocChanged,
         hasViewNameChanged: this.state.hasViewNameChanged,
+        originalViewName: this.state.originalViewName,
         map: this.refs.mapEditor.getValue(),
         reduce: this.refs.reduceEditor.getReduceValue(),
         designDocs: this.state.designDocs
       });
     },
 
-    viewChange: function (event) {
-      Actions.changeViewName(event.target.value);
+    viewChange: function (e) {
+      Actions.changeViewName(e.target.value);
     },
 
     updateMapCode: function (code) {
@@ -357,19 +318,9 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
         );
       }
 
-      var url = '#/' + FauxtonAPI.urls('allDocs', 'app', this.state.database.id, '');
-
+      var cancelLink = '#' + FauxtonAPI.urls('view', 'showView', this.state.database.id, this.state.designDocId, this.state.viewName);
       return (
         <div className="define-view">
-          <PaddedBorderedBox>
-            Views are the primary tools for querying and reporting.
-          </PaddedBorderedBox>
-          <PaddedBorderedBox>
-            <strong>Database</strong>
-            <div className="db-title">
-              <a href={url}>{this.state.database.id}</a>
-            </div>
-          </PaddedBorderedBox>
           <form className="form-horizontal view-query-save" onSubmit={this.saveView}>
             <DesignDocSelector />
             <div className="control-group">
@@ -400,6 +351,7 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
                   title={"Map function"}
                   docLink={getDocUrl('MAP_FUNCS')}
                   blur={this.updateMapCode}
+                  allowZenMode={false}
                   defaultCode={this.state.map} />
               </PaddedBorderedBox>
             </div>
@@ -409,7 +361,7 @@ function (app, FauxtonAPI, React, Stores, Actions, Components, ReactComponents) 
             <div className="padded-box">
               <div className="control-group">
                 <ConfirmButton id="save-view" text="Save Document and Build Index" />
-                <DeleteView />
+                <a href={cancelLink} className="index-cancel-link">Cancel</a>
               </div>
             </div>
           </form>
